@@ -1,7 +1,7 @@
 <template>
   <div class="pl-4">
     <div class="flex items-center pb-2 border-b border-gray-200">
-      <div class="flex items-center space-x-3"><a href="/" class="flex flex-row">
+      <div class="flex items-center space-x-3"><a href="./" class="flex flex-row">
         <img src="/ATC.svg" alt="Logo" class="h-8 w-8">
         <h1 class="text-xl font-bold text-gray-800">管制训练场</h1></a>
       </div>
