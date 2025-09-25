@@ -38,15 +38,3 @@
 * **开发服务器**: `pnpm dev` (启动 Vite 开发服务器)
 * **构建项目**: `pnpm build` (使用 Vite 构建)
 * **预览构建**: `pnpm preview` (预览构建后的应用)
-
-## 部署
-
-项目配置了 GitHub Actions 工作流，可以自动部署到 GitHub Pages。工作流文件位于 `.github/workflows/deploy.yml`。
-
-## 开发约定
-
-* 使用 Vue 3 的 Composition API 和 `<script setup>` 语法。
-* 使用 TypeScript 进行类型检查。
-* 使用 Pinia 进行全局状态管理。
-* 使用 Tailwind CSS 进行样式设计。
-* 使用 Konva 进行 2D 图形渲染。
