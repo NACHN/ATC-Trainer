@@ -1,34 +1,19 @@
 <template>
-  <div class="tabs">
-    <button
-      v-for="tab in tabs"
-      :key="tab.id"
-      :class="['tab-button', { active: activeTab === tab.id }]"
-      @click="activeTab = tab.id"
-    >
-      {{ tab.label }}
-    </button>
-  </div>
-  <div class="tab-content">
+  <div class="tab-content bg-white rounded-b-lg shadow">
     <FlightSim v-if="activeTab === 'flight-sim'" />
-    <div v-if="activeTab === 'other'" class="p-4">Other Module (TBD)</div>
+    <div v-else-if="activeTab === 'other'" class="p-8 text-center text-gray-500">
+      <h3 class="text-xl font-semibold mb-2">Other Module</h3>
+      <p>Coming Soon</p>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
 import FlightSim from '../views/FlightSim.vue';
 
-interface Tab {
-  id: string;
-  label: string;
-}
-
-const tabs: Tab[] = [
-  { id: 'flight-sim', label: 'Flight Operation Simulation' },
-  { id: 'other', label: 'Other Module' },
-];
-const activeTab = ref<string>('flight-sim');
+const props = defineProps<{
+  activeTab: string;
+}>();
 </script>
 
 <style scoped>
