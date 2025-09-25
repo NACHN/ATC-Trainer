@@ -1,20 +1,27 @@
-name: Deploy to GitHub Pages
+# 用于将静态内容部署到 GitHub Pages 的简单工作流程
+name: Deploy VitePress site to Pages
 
 on:
+  # 在推送到 `main` 分支时触发
   push:
-    branches: [ main ]
+    branches: ['main']
+
+  # 允许你手动在 Actions 页签中运行此工作流
   workflow_dispatch:
 
+# 设置 GITHUB_TOKEN 的权限，以允许部署到 GitHub Pages
 permissions:
   contents: read
   pages: write
   id-token: write
 
+# 只允许同时进行一次部署，跳过正在运行和等待中的任务
 concurrency:
-  group: "pages"
-  cancel-in-progress: false
+  group: 'pages'
+  cancel-in-progress: true
 
 jobs:
+  # 单次部署的工作
   deploy:
     environment:
       name: github-pages
@@ -23,31 +30,35 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      # 安装 pnpm
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9 # 你可以根据需要指定 pnpm 版本
 
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
-          cache: "pnpm"
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 9
+          node-version: 18
+          cache: 'pnpm' # 为 pnpm 启用缓存
 
       - name: Install dependencies
         run: pnpm install
 
       - name: Build
-        run: pnpm build
+        run: pnpm build # 关键：运行 VitePress 的构建命令
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
 
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v4
+        uses: actions/upload-pages-artifact@v3
         with:
-          path: './dist'
+          # 关键：上传构建输出目录
+          path: ./dist
 
       - name: Deploy to GitHub Pages
         id: deployment
