@@ -81,7 +81,7 @@
         </button>
       </div>
       <div class="mt-3 text-sm text-gray-600">
-        {{ selectedAircraft ? `Current: ${selectedAircraft.speed}` : 'No aircraft selected' }}
+        {{ selectedAircraft ? `当前: ${selectedAircraft.speed}` : '未选中' }}
       </div>
     </div>
   </div>

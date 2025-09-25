@@ -12,6 +12,13 @@ dist
 dist-ssr
 *.local
 
+# Vue component JS files
+*.vue.js
+
+# TypeScript build info files
+*.tsbuildinfo
+node_modules/.tmp/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

@@ -106,7 +106,7 @@ export const useSimulationStore = defineStore('simulation', () => {
 
   const updateAircraftPositions = (): void => {
     const speedValues: Record<'S' | 'M' | 'F', number> = { S: 1, M: 2, F: 3 }; // Pixels per 100ms
-    aircrafts.value.forEach(aircraft => {
+    aircrafts.value.forEach((aircraft: Aircraft) => {
       const speed = speedValues[aircraft.speed];
       // 方向定义：0度向上(North)，角度逆时针增加
       const angle = (aircraft.direction * 45 * Math.PI) / 180;
@@ -119,7 +119,7 @@ export const useSimulationStore = defineStore('simulation', () => {
 
   const checkCollisions = (): void => {
     const newAircrafts: Aircraft[] = [];
-    aircrafts.value.forEach(aircraft => {
+    aircrafts.value.forEach((aircraft: Aircraft) => {
       // Wall collisions
       if (
         (aircraft.x < 10 && !(aircraft.y >= 250 && aircraft.y <= 350 && aircraft.destination === 'D')) ||
@@ -131,7 +131,7 @@ export const useSimulationStore = defineStore('simulation', () => {
         return;
       }
       // Same altitude aircraft collisions
-      aircrafts.value.forEach(other => {
+      aircrafts.value.forEach((other: Aircraft) => {
         if (
           aircraft !== other &&
           aircraft.altitude === other.altitude &&
@@ -142,7 +142,7 @@ export const useSimulationStore = defineStore('simulation', () => {
         }
       });
       // Airport collisions
-      airports.value.forEach(airport => {
+      airports.value.forEach((airport: Airport) => {
         const isRunway =
           (aircraft.y >= airport.y && aircraft.y <= airport.y + airport.height &&
             (Math.abs(aircraft.x - airport.x) < 5 || Math.abs(aircraft.x - (airport.x + airport.width)) < 5)) &&
@@ -171,7 +171,7 @@ export const useSimulationStore = defineStore('simulation', () => {
 
   const checkDestinations = (): void => {
     const newAircrafts: Aircraft[] = [];
-    aircrafts.value.forEach(aircraft => {
+    aircrafts.value.forEach((aircraft: Aircraft) => {
       // Exit collisions
       if (
         (aircraft.destination === 'A' && aircraft.y <= 10 && aircraft.x >= 350 && aircraft.x <= 450) ||
@@ -192,7 +192,7 @@ export const useSimulationStore = defineStore('simulation', () => {
   };
 
   const updateAircraft = (id: string, updates: Partial<Aircraft>): void => {
-    const aircraft = aircrafts.value.find(ac => ac.id === id);
+    const aircraft = aircrafts.value.find((ac: Aircraft) => ac.id === id);
     if (aircraft) {
       Object.assign(aircraft, updates);
       aircraft.label = `${aircraft.speed}${aircraft.altitude}${aircraft.destination}`;

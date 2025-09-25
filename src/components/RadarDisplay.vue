@@ -33,6 +33,20 @@
             cornerRadius: 4
           }"
         />
+        <v-text
+          v-for="airport in airports"
+          :key="`label-${airport.id}`"
+          :config="{
+            x: airport.x + airport.width / 2,
+            y: airport.y + airport.height / 2,
+            text: airport.id,
+            fill: 'white',
+            fontSize: 16,
+            fontStyle: 'bold',
+            align: 'center',
+            verticalAlign: 'middle'
+          }"
+        />
         <!-- Aircraft -->
         <v-group
           v-for="aircraft in aircrafts"
