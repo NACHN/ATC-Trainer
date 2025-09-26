@@ -23,6 +23,7 @@ export interface SimulationSettings {
   batchSize: number;
   totalAircraft: number;
   totalTime: number;
+  speedFactor: number;
 }
 
 export interface Accident {

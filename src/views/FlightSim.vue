@@ -36,8 +36,12 @@
             <input v-model.number="settings.totalAircraft" type="number" class="w-20 p-1 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm" />
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700">总时间  (s)</label>
+            <label class="block text-sm font-medium text-gray-700">总时间 (s)</label>
             <input v-model.number="settings.totalTime" type="number" class="w-20 p-1 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700">速度比例</label>
+            <input v-model.number="settings.speedFactor" type="number" class="w-20 p-1 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm" />
           </div>
           <button @click="startSimulation" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-1 px-3 rounded transition duration-200 text-sm">
             Start
@@ -78,6 +82,7 @@ const startSimulation = (): void => {
   simStore.startSimulation();
   showResults.value = false; // 开始新模拟时隐藏结果模态框
   showResultsButton.value = false; // 隐藏结果显示按钮
+  console.log("batch:",settings.batchSize)
 };
 
 const showResultsModal = (): void => {
@@ -87,7 +92,7 @@ const showResultsModal = (): void => {
 // Update simulation every 1000ms (1 second)
 useIntervalFn(() => {
   simStore.updateSimulation();
-  
+  console.log("time:",simStore.timeElapsed,"total:",simStore.spawnedCount)
   // 检查是否需要显示结果模态框
   if (!showResults.value && (
     (simStore.aircrafts.length === 0 && simStore.spawnedCount >= settings.totalAircraft) ||

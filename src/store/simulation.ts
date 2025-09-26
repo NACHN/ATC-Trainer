@@ -17,6 +17,7 @@ export const useSimulationStore = defineStore('simulation', () => {
     batchSize: 2,
     totalAircraft: 10,
     totalTime: 300,
+    speedFactor: 3,
   });
   const selectedAircraft = ref<Aircraft | null>(null);
   const accidents = ref<Accident[]>([]);
@@ -108,14 +109,14 @@ export const useSimulationStore = defineStore('simulation', () => {
   };
 
   const updateAircraftPositions = (): void => {
-    const speedValues: Record<'S' | 'M' | 'F', number> = { S: 3, M: 6, F: 9 }; // Pixels per 1000ms (1 second)
+    const speedValues: Record<'S' | 'M' | 'F', number> = { S: 1, M: 2, F: 3 }; // Pixels per 1000ms (1 second)
     aircrafts.value.forEach((aircraft: Aircraft) => {
       const speed = speedValues[aircraft.speed];
       // 方向定义：0度向上(North)，角度逆时针增加
       const angle = (aircraft.direction * 45 * Math.PI) / 180;
       // 由于屏幕坐标系y轴向下，需要调整角度
-      aircraft.x += speed * Math.sin(angle);
-      aircraft.y -= speed * Math.cos(angle);
+      aircraft.x += speed * Math.sin(angle) * settings.value.speedFactor;
+      aircraft.y -= speed * Math.cos(angle) * settings.value.speedFactor;
       aircraft.path.push(aircraft.x, aircraft.y);
     });
   };
