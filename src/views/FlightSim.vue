@@ -8,7 +8,7 @@
       <!-- Right: Control Panel Only -->
       <div class="w-1/3 p-6 bg-gray-50 overflow-y-auto">
         <h2 class="text-2xl font-bold mb-6 text-gray-800">飞机控制</h2>
-        <!-- Selected Aircraft Info -->
+        <!-- Selected Aircraft Info 
         <div class="mb-6">
           <AircraftCard v-if="selectedAircraft" :aircraft="selectedAircraft" />
         </div>
@@ -42,6 +42,13 @@
           <button @click="startSimulation" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-1 px-3 rounded transition duration-200 text-sm">
             Start
           </button>
+          <button 
+            v-if="showResultsButton" 
+            @click="showResultsModal" 
+            class="bg-green-600 hover:bg-green-700 text-white font-medium py-1 px-3 rounded transition duration-200 text-sm"
+          >
+            Show Results
+          </button>
         </div>
       </div>
     </div>
@@ -65,18 +72,31 @@ const simStore = useSimulationStore();
 const settings: SimulationSettings = simStore.settings;
 const selectedAircraft = simStore.selectedAircraft as Aircraft | null;
 const showResults = ref(false);
+const showResultsButton = ref(false);
 
 const startSimulation = (): void => {
   simStore.startSimulation();
+  showResults.value = false; // 开始新模拟时隐藏结果模态框
+  showResultsButton.value = false; // 隐藏结果显示按钮
 };
 
-// Update simulation every 100ms
+const showResultsModal = (): void => {
+  showResults.value = true;
+};
+
+// Update simulation every 1000ms (1 second)
 useIntervalFn(() => {
   simStore.updateSimulation();
   
   // 检查是否需要显示结果模态框
-  if (simStore.aircrafts.length === 0 && simStore.spawnedCount >= settings.totalAircraft) {
-    showResults.value = true;
+  if (!showResults.value && (
+    (simStore.aircrafts.length === 0 && simStore.spawnedCount >= settings.totalAircraft) ||
+    (simStore.timeElapsed >= settings.totalTime) 
+  )) {
+    showResultsButton.value = true;
+    if(!simStore.status)
+      showResults.value = true;
+      simStore.status = true;
   }
 }, 1000);
 </script>

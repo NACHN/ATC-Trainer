@@ -5,6 +5,7 @@ import { useRouter } from 'vue-router';
 
 export const useSimulationStore = defineStore('simulation', () => {
   const router = useRouter();
+  let status = false;
 
   const aircrafts = ref<Aircraft[]>([]);
   const airports = ref<Airport[]>([
@@ -29,6 +30,7 @@ export const useSimulationStore = defineStore('simulation', () => {
     successes.value = [];
     spawnedCount.value = 0;
     timeElapsed.value = 0;
+    status = true;
     spawnAircraft();
   };
 
@@ -40,8 +42,9 @@ export const useSimulationStore = defineStore('simulation', () => {
     ) {
       // 检查是否所有飞机都已完成（成功或事故）
       if (aircrafts.value.length === 0) {
-        // 模拟结束后跳转到结果页面
-        router.push('/results');
+        // 模拟结束后显示结果模态框，而不是跳转页面
+        // router.push('/results');  // 移除页面跳转
+        status = false;
       }
       return;
     }
@@ -95,8 +98,8 @@ export const useSimulationStore = defineStore('simulation', () => {
   };
 
   const updateSimulation = (): void => {
-    timeElapsed.value += 1.0; // Update every 100ms
-    if (timeElapsed.value % settings.value.interval < 0.1) {
+    timeElapsed.value += 1.0; // Update every 1000ms (1 second)
+    if (timeElapsed.value % settings.value.interval < 1.0) {
       spawnAircraft();
     }
     updateAircraftPositions();
@@ -105,14 +108,14 @@ export const useSimulationStore = defineStore('simulation', () => {
   };
 
   const updateAircraftPositions = (): void => {
-    const speedValues: Record<'S' | 'M' | 'F', number> = { S: 1, M: 2, F: 3 }; // Pixels per 100ms
+    const speedValues: Record<'S' | 'M' | 'F', number> = { S: 3, M: 6, F: 9 }; // Pixels per 1000ms (1 second)
     aircrafts.value.forEach((aircraft: Aircraft) => {
       const speed = speedValues[aircraft.speed];
       // 方向定义：0度向上(North)，角度逆时针增加
       const angle = (aircraft.direction * 45 * Math.PI) / 180;
       // 由于屏幕坐标系y轴向下，需要调整角度
-      aircraft.x += speed * Math.sin(angle)*3;
-      aircraft.y -= speed * Math.cos(angle)*3;
+      aircraft.x += speed * Math.sin(angle);
+      aircraft.y -= speed * Math.cos(angle);
       aircraft.path.push(aircraft.x, aircraft.y);
     });
   };
@@ -120,6 +123,8 @@ export const useSimulationStore = defineStore('simulation', () => {
   const checkCollisions = (): void => {
     const newAircrafts: Aircraft[] = [];
     aircrafts.value.forEach((aircraft: Aircraft) => {
+      let removed = false;
+      
       // Wall collisions
       if (
         (aircraft.x < 10 && !(aircraft.y >= 250 && aircraft.y <= 350 && aircraft.destination === 'D')) ||
@@ -128,43 +133,55 @@ export const useSimulationStore = defineStore('simulation', () => {
         (aircraft.y > 590 && !(aircraft.x >= 350 && aircraft.x <= 450 && aircraft.destination === 'C'))
       ) {
         accidents.value.push({ aircraft, reason: 'Wall Collision' });
-        return;
+        removed = true;
       }
+      
       // Same altitude aircraft collisions
-      aircrafts.value.forEach((other: Aircraft) => {
-        if (
-          aircraft !== other &&
-          aircraft.altitude === other.altitude &&
-          Math.hypot(aircraft.x - other.x, aircraft.y - other.y) < 10
-        ) {
-          accidents.value.push({ aircraft, reason: 'Aircraft Collision' });
-          return;
-        }
-      });
-      // Airport collisions
-      airports.value.forEach((airport: Airport) => {
-        const isRunway =
-          (aircraft.y >= airport.y && aircraft.y <= airport.y + airport.height &&
-            (Math.abs(aircraft.x - airport.x) < 5 || Math.abs(aircraft.x - (airport.x + airport.width)) < 5)) &&
-          aircraft.destination === airport.id;
-        const isLongEdge =
-          (aircraft.x >= airport.x && aircraft.x <= airport.x + airport.width &&
-            (Math.abs(aircraft.y - airport.y) < 5 || Math.abs(aircraft.y - (airport.y + airport.height)) < 5));
-        if (
-          aircraft.x >= airport.x &&
-          aircraft.x <= airport.x + airport.width &&
-          aircraft.y >= airport.y &&
-          aircraft.y <= airport.y + airport.height
-        ) {
-          if (isRunway) {
-            successes.value.push({ aircraft, reason: 'Airport Landing' });
-          } else {
-            accidents.value.push({ aircraft, reason: 'Invalid Airport Entry' });
+      if (!removed) {
+        for (const other of aircrafts.value) {
+          if (
+            aircraft !== other &&
+            aircraft.altitude === other.altitude &&
+            Math.hypot(aircraft.x - other.x, aircraft.y - other.y) < 10
+          ) {
+            accidents.value.push({ aircraft, reason: 'Aircraft Collision' });
+            removed = true;
+            break;
           }
-          return;
         }
-      });
-      newAircrafts.push(aircraft);
+      }
+      
+      // Airport collisions
+      if (!removed) {
+        for (const airport of airports.value) {
+          const isRunway =
+            (aircraft.y >= airport.y && aircraft.y <= airport.y + airport.height &&
+              (Math.abs(aircraft.x - airport.x) < 5 || Math.abs(aircraft.x - (airport.x + airport.width)) < 5)) &&
+            aircraft.destination === airport.id;
+          const isLongEdge =
+            (aircraft.x >= airport.x && aircraft.x <= airport.x + airport.width &&
+              (Math.abs(aircraft.y - airport.y) < 5 || Math.abs(aircraft.y - (airport.y + airport.height)) < 5));
+          
+          if (
+            aircraft.x >= airport.x &&
+            aircraft.x <= airport.x + airport.width &&
+            aircraft.y >= airport.y &&
+            aircraft.y <= airport.y + airport.height
+          ) {
+            if (isRunway) {
+              successes.value.push({ aircraft, reason: 'Airport Landing' });
+            } else {
+              accidents.value.push({ aircraft, reason: 'Invalid Airport Entry' });
+            }
+            removed = true;
+            break;
+          }
+        }
+      }
+      
+      if (!removed) {
+        newAircrafts.push(aircraft);
+      }
     });
     aircrafts.value = newAircrafts;
   };
@@ -172,6 +189,8 @@ export const useSimulationStore = defineStore('simulation', () => {
   const checkDestinations = (): void => {
     const newAircrafts: Aircraft[] = [];
     aircrafts.value.forEach((aircraft: Aircraft) => {
+      let removed = false;
+      
       // Exit collisions
       if (
         (aircraft.destination === 'A' && aircraft.y <= 10 && aircraft.x >= 350 && aircraft.x <= 450) ||
@@ -180,9 +199,12 @@ export const useSimulationStore = defineStore('simulation', () => {
         (aircraft.destination === 'D' && aircraft.x <= 10 && aircraft.y >= 250 && aircraft.y <= 350)
       ) {
         successes.value.push({ aircraft, reason: 'Exit Reached' });
-        return;
+        removed = true;
       }
-      newAircrafts.push(aircraft);
+      
+      if (!removed) {
+        newAircrafts.push(aircraft);
+      }
     });
     aircrafts.value = newAircrafts;
   };
@@ -207,6 +229,7 @@ export const useSimulationStore = defineStore('simulation', () => {
     accidents,
     successes,
     spawnedCount,
+    status,
     timeElapsed,
     startSimulation,
     spawnAircraft,
